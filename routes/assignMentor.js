@@ -20,6 +20,10 @@ router.post("/mentors", (req, res) => {
 	});
 });
 
+router.get("/getmentors", (req, res) => {
+	res.json(mentors);
+});
+
 /* Create students  */
 
 router.post("/students", (req, res) => {
@@ -28,6 +32,12 @@ router.post("/students", (req, res) => {
 		course: req.body.course,
 		mentorid: req.body.mentorid,
 	};
+
+	for (let key in data) {
+		if (typeof data[key] === "string") {
+			data[key] = data[key].toLowerCase();
+		}
+	}
 	students.push(data);
 	res.json({
 		statusCode: 200,
@@ -35,12 +45,20 @@ router.post("/students", (req, res) => {
 	});
 });
 
+router.get("/getstudents", (req, res) => {
+	res.json(students);
+});
+
 /* Select one mentor and add multiple student */
 
 router.put("/mentor/:id/studentassigntomentor", (req, res) => {
 	mentors[req.params.id].students = req.body.students;
-
-	let assignedstudents = students.filter(student => student.mentorid == null);
+	const lowerArr = req.body.students.map(item => item.toLowerCase());
+	let assignedstudents = students.filter(student => {
+		if (lowerArr.includes(student.name)) {
+			return student;
+		}
+	});
 
 	let response = {assignedstudents, mentors, students};
 
@@ -62,13 +80,18 @@ router.delete("/:id/stdfrommentor", (req, res) => {
 
 /*Select one student and assign one mentor*/
 
-router.put("stdassign/:name", (req, res) => {
-	students.foreach((data, index) => {
-		if (data.name.tolowercase() === req.params.name.toLowerCase()) {
-			students[index].mentor = req.body.mentorid;
+router.put("/stdassign/:name", (req, res) => {
+	const name = req.params.name;
+	const reqmentorid = req.body.mentorid;
+
+	for (let i = 0; i < students.length; i++) {
+		if (reqmentorid <= mentors.length && students[i].name === name.toLowerCase()) {
+			students[i].mentorid = reqmentorid;
 		}
-	});
+	}
+
 	res.json({
+		name,
 		statusCode: 200,
 		message: "Mentor assigned to student",
 	});
@@ -82,12 +105,13 @@ router
 		res.send(students);
 	})
 	.post((req, res) => {
-		students.forEach(data => {
-			data.mentor = req.body.mentorid;
-		});
+		for (let i = 0; i < students.length; i++) {
+			students[i].mentorid = parseInt(req.params.mentorid);
+		}
+
 		res.json({
 			statusCode: 200,
-			message: `${mentors[req.body.mentorid].name} is assigned to all students`,
+			message: `${mentors[req.params.mentorid].name} is assigned to all students`,
 		});
 	});
 
