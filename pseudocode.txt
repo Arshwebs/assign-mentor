@@ -1,0 +1,68 @@
+Algorithm:
+
+1. Create mentor API
+2. Create student API
+3. Create API to Assign a student to mentor
+    + Select one mentor and add multiple student
+    + A student who has a mentor should not be shown in the list 
+4. Create API to Assign or change mentor for particular student
+    + Select one student and assign one mentor
+5. Create API to show all student and assign one mentor
+
+Pseudocode:
+
+1. post/mentors
+let mentor = [
+
+     id:mentors.length+1
+     ,name,skills,students[]
+]
+
+2. post/students
+let student = [
+    name,course,mentorid = null
+]
+
+3. 
+
+put/mentor/:id/studentassigntomentor
+{
+    mentor[req.params.id].students.push(req.body.students)
+
+let assignedstudents = students.foreach=>(student=>{
+if
+ student mentor id === null 
+ continue 
+else
+return student  
+
+})
+return assignedstudents
+
+
+}
+
+delete/:id/stdfrommentor
+
+ mentor[req.params.id].students.foreach=>(data,index =>{
+    if(data.toLowercase === req.body.student.tolowercase){
+    mentors.students.slice(index,1);
+    }
+ })
+
+
+4. put/stdassign/:name
+
+students.foreach((data,index)=>{
+if(data.name.tolowercase === req.params.name){
+    students[index].mentor=req.body.mentorname
+}
+})
+
+5. get/:name
+
+mentors.foreach((data,index)=>{
+   if(data.name.tolowercase === req.params.name.tolowercase){
+    res.send(mentors[index].students.json)
+}
+})
