@@ -4,8 +4,6 @@ var router = express.Router();
 const {mongodb, dbName, dbUrl, MongoClient} = require("../dbconfig");
 
 const client = new MongoClient(dbUrl);
-// let mentors = [];
-// let students = [];
 
 /* Create mentor  */
 
@@ -32,18 +30,6 @@ router.post("/mentors", async (req, res) => {
 	} finally {
 		client.close();
 	}
-
-	// let data = {
-	// 	id: mentors.length + 1,
-	// 	name: req.body.name,
-	// 	skills: req.body.skills,
-	// 	students: req.body.students,
-	// };
-	// mentors.push(data);
-	// res.json({
-	// 	statusCode: 200,
-	// 	message: "Mentor created successfully",
-	// });
 });
 
 router.get("/getmentors", async (req, res) => {
@@ -131,7 +117,7 @@ router.put("/mentor/:id/studentassigntomentor", async (req, res) => {
 		});
 
 		res.send({
-			message: "Data created Successfully",
+			message: "Data added Successfully",
 			data,
 			assignedstudents,
 			changedata,
@@ -154,7 +140,10 @@ router.delete("/:id/:stdfrommentor", async (req, res) => {
 		deletestd = deletestd.toLowerCase();
 		const db = await client.db(dbName);
 		let deletedstudent = await db.collection("mentors").updateOne({_id: mentorid}, {$pull: {students: deletestd}});
-		res.send(deletedstudent);
+		res.send({
+			message: "student is removed from mentor successfully",
+			deletedstudent,
+		});
 	} catch (error) {
 		console.log(error);
 		res.send({message: "Internal server error", error});
@@ -174,7 +163,10 @@ router.put("/stdassign/:name", (req, res) => {
 		const db = client.db(dbName);
 
 		let data = db.collection("students").updateOne({name: studentname}, {$set: {mentorid: req.body.mentorid}});
-		res.send(data);
+		res.send({
+			message: `Student assigned with mentor`,
+			data,
+		});
 	} catch (error) {
 		console.log(error);
 		res.send({message: "Internal server error", error});
@@ -212,7 +204,7 @@ router
 			let db = await client.db(dbName);
 			let data = await db.collection("students").updateMany({mentorid: {$exists: true}}, {$set: {mentorid: mentorid}});
 			res.send({
-				message: "Data Recevied Successfully",
+				message: "Data updated Successfully",
 				data,
 			});
 		} catch (error) {
