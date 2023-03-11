@@ -26,7 +26,7 @@ router.post("/mentors", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -44,7 +44,7 @@ router.get("/getmentors", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -73,7 +73,7 @@ router.post("/students", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -91,7 +91,7 @@ router.get("/getstudents", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -124,7 +124,7 @@ router.put("/mentor/:id/studentassigntomentor", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -146,7 +146,7 @@ router.delete("/:id/:stdfrommentor", async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -169,7 +169,7 @@ router.put("/stdassign/:name", (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.send({message: "Internal server error", error});
+		res.status(500).send({message: "Internal server error", error});
 	} finally {
 		client.close();
 	}
@@ -191,7 +191,7 @@ router
 			});
 		} catch (error) {
 			console.log(error);
-			res.send({message: "Internal server error", error});
+			res.status(500).send({message: "Internal server error", error});
 		} finally {
 			client.close();
 		}
@@ -209,7 +209,7 @@ router
 			});
 		} catch (error) {
 			console.log(error);
-			res.send({message: "Internal server error", error});
+			res.status(500).send({message: "Internal server error", error});
 		} finally {
 			client.close();
 		}
