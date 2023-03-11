@@ -3,7 +3,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-const {mongodb, dbName, dbUrl} = require("./dbconfig");
+const {mongodb, dbName, dbUrl, MongoClient} = require("./dbconfig");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");

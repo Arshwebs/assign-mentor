@@ -1,118 +1,226 @@
 var express = require("express");
 var router = express.Router();
 
-let mentors = [];
-let students = [];
+const {mongodb, dbName, dbUrl, MongoClient} = require("../dbconfig");
+
+const client = new MongoClient(dbUrl);
+// let mentors = [];
+// let students = [];
 
 /* Create mentor  */
 
-router.post("/mentors", (req, res) => {
-	let data = {
-		id: mentors.length + 1,
-		name: req.body.name,
-		skills: req.body.skills,
-		students: req.body.students,
-	};
-	mentors.push(data);
-	res.json({
-		statusCode: 200,
-		message: "Mentor created successfully",
-	});
+router.post("/mentors", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let db = await client.db(dbName);
+		let dblength = await db.collection("mentors").find().toArray();
+		dblength = dblength.length;
+		let data = await db.collection("mentors").insertOne({
+			_id: dblength + 1,
+			name: req.body.name,
+			skills: req.body.skills,
+			students: req.body.students,
+		});
+		res.send({
+			message: "Data created Successfully",
+			data,
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
+	}
+
+	// let data = {
+	// 	id: mentors.length + 1,
+	// 	name: req.body.name,
+	// 	skills: req.body.skills,
+	// 	students: req.body.students,
+	// };
+	// mentors.push(data);
+	// res.json({
+	// 	statusCode: 200,
+	// 	message: "Mentor created successfully",
+	// });
 });
 
-router.get("/getmentors", (req, res) => {
-	res.json(mentors);
+router.get("/getmentors", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let db = await client.db(dbName);
+		let data = await db.collection("mentors").find().toArray();
+		res.send({
+			message: "Data Recevied Successfully",
+			data,
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
+	}
 });
 
 /* Create students  */
 
-router.post("/students", (req, res) => {
-	let data = {
-		name: req.body.name,
-		course: req.body.course,
-		mentorid: req.body.mentorid,
-	};
-
-	for (let key in data) {
-		if (typeof data[key] === "string") {
-			data[key] = data[key].toLowerCase();
-		}
+router.post("/students", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let db = await client.db(dbName);
+		let dblength = await db.collection("students").find().toArray();
+		dblength = dblength.length;
+		let namelowercase = req.body.name;
+		namelowercase = namelowercase.toLowerCase();
+		let data = await db.collection("students").insertOne({
+			_id: dblength + 1,
+			name: namelowercase,
+			course: req.body.course,
+			mentorid: req.body.mentorid,
+		});
+		res.send({
+			message: "Data created Successfully",
+			data,
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
 	}
-	students.push(data);
-	res.json({
-		statusCode: 200,
-		message: "Student created successfully",
-	});
 });
 
-router.get("/getstudents", (req, res) => {
-	res.json(students);
+router.get("/getstudents", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let db = await client.db(dbName);
+		let data = await db.collection("students").find().toArray();
+		res.send({
+			message: "Data Recevied Successfully",
+			data,
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
+	}
 });
 
 /* Select one mentor and add multiple student */
 
-router.put("/mentor/:id/studentassigntomentor", (req, res) => {
-	mentors[req.params.id].students = req.body.students;
-	const lowerArr = req.body.students.map(item => item.toLowerCase());
-	let assignedstudents = students.filter(student => {
-		if (lowerArr.includes(student.name)) {
-			return student;
-		}
-	});
+router.put("/mentor/:id/studentassigntomentor", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let db = await client.db(dbName);
+		let changedata = parseInt(req.params.id);
+		let data = await db.collection("mentors").updateOne({_id: changedata}, {$set: {students: req.body.students}});
 
-	let response = {assignedstudents, mentors, students};
+		let filterstudentsname = await db.collection("students").find().toArray();
+		const lowerArr = req.body.students.map(item => item.toLowerCase());
 
-	res.json(response);
+		let assignedstudents = filterstudentsname.filter(student => {
+			if (lowerArr.includes(student.name)) {
+				return student;
+			}
+		});
+
+		res.send({
+			message: "Data created Successfully",
+			data,
+			assignedstudents,
+			changedata,
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
+	}
 });
 
 /*delete a particular student from mentor*/
-router.delete("/:id/stdfrommentor", (req, res) => {
-	mentors[req.params.id].students.foreach(data, index => {
-		if (data.tolowercase() === req.body.student.tolowercase()) {
-			mentors.students.slice(index, 1);
-		}
-	});
-	res.json({
-		statusCode: 201,
-		message: "student deleted successfully",
-	});
+router.delete("/:id/:stdfrommentor", async (req, res) => {
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	try {
+		let mentorid = parseInt(req.params.id);
+		let deletestd = req.params.stdfrommentor;
+		deletestd = deletestd.toLowerCase();
+		const db = await client.db(dbName);
+		let deletedstudent = await db.collection("mentors").updateOne({_id: mentorid}, {$pull: {students: deletestd}});
+		res.send(deletedstudent);
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
+	}
 });
 
 /*Select one student and assign one mentor*/
 
 router.put("/stdassign/:name", (req, res) => {
-	const name = req.params.name;
-	const reqmentorid = req.body.mentorid;
+	const client = new MongoClient(dbUrl);
+	client.connect();
+	let studentname = req.params.name;
+	studentname = studentname.toLowerCase();
+	try {
+		const db = client.db(dbName);
 
-	for (let i = 0; i < students.length; i++) {
-		if (reqmentorid <= mentors.length && students[i].name === name.toLowerCase()) {
-			students[i].mentorid = reqmentorid;
-		}
+		let data = db.collection("students").updateOne({name: studentname}, {$set: {mentorid: req.body.mentorid}});
+		res.send(data);
+	} catch (error) {
+		console.log(error);
+		res.send({message: "Internal server error", error});
+	} finally {
+		client.close();
 	}
-
-	res.json({
-		name,
-		statusCode: 200,
-		message: "Mentor assigned to student",
-	});
 });
 
 /*Create API to show all student and assign one mentor*/
 
 router
 	.route("/liststd/:mentorid")
-	.get((req, res) => {
-		res.send(students);
-	})
-	.post((req, res) => {
-		for (let i = 0; i < students.length; i++) {
-			students[i].mentorid = parseInt(req.params.mentorid);
+	.get(async (req, res) => {
+		const client = new MongoClient(dbUrl);
+		client.connect();
+		try {
+			let db = await client.db(dbName);
+			let data = await db.collection("students").find().toArray();
+			res.send({
+				message: "Data Recevied Successfully",
+				data,
+			});
+		} catch (error) {
+			console.log(error);
+			res.send({message: "Internal server error", error});
+		} finally {
+			client.close();
 		}
-
-		res.json({
-			statusCode: 200,
-			message: `${mentors[req.params.mentorid].name} is assigned to all students`,
-		});
+	})
+	.post(async (req, res) => {
+		const client = new MongoClient(dbUrl);
+		client.connect();
+		try {
+			let mentorid = parseInt(req.params.mentorid);
+			let db = await client.db(dbName);
+			let data = await db.collection("students").updateMany({mentorid: {$exists: true}}, {$set: {mentorid: mentorid}});
+			res.send({
+				message: "Data Recevied Successfully",
+				data,
+			});
+		} catch (error) {
+			console.log(error);
+			res.send({message: "Internal server error", error});
+		} finally {
+			client.close();
+		}
 	});
 
 module.exports = router;
